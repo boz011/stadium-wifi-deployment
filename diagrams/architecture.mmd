@@ -1,0 +1,58 @@
+flowchart TB
+    subgraph EDGE["Internet & Edge"]
+        Internet["Internet\n(High Bandwidth Circuits)"]
+        Firewall["Firewall + Rate Limiting\n+ Captive Portal"]
+    end
+
+    subgraph DC["Venue Data Center (On-Site)"]
+        DistSwitch["Distribution / Core Switch\n(L3 Routing + ACLs)"]
+        WLCCluster["WLC Cluster (High Availability)\nCatalyst 9800 Series"]:::wlc
+    end
+
+    subgraph ACCESS["Access Layer"]
+        PoESwitches["PoE Access Switches\n(Multiple Closets throughout venue)"]
+        APGroup["High-Density Dual-Band APs\n500–3000+ APs\n2.4 GHz + 5/6 GHz"]:::ap
+    end
+
+    subgraph VLANS["VLAN Segmentation (L3 at Core)"]
+        VLAN10["VLAN 10 — Management\n(APs + WLC)"]
+        VLAN20["VLAN 20 — Staff / Corporate"]
+        VLAN30["VLAN 30 — Public / Guest WiFi\n(Internet-only)"]
+        VLAN40["VLAN 40 — Premium / Suites"]
+        VLAN50["VLAN 50 — Media / Press"]
+        VLAN60["VLAN 60 — IoT & Sensors"]
+        VLAN70["VLAN 70 — Vendors / POS"]
+    end
+
+    subgraph CLIENTS["Wireless Clients"]
+        Fans["Fans / Spectators\n(30,000 – 80,000+ devices)"]
+        Staff["Staff & Operations"]
+        Media["Media / Broadcast Crew"]
+        IoT["IoT Devices\n(Cameras, Sensors, POS)"]
+    end
+
+    Internet --> Firewall
+    Firewall --> DistSwitch
+    DistSwitch -- "Fiber (short run in DC)" --> WLCCluster
+    DistSwitch -- "Fiber Uplinks\n10G/25G/40G/100G" --> PoESwitches
+    PoESwitches -- "Copper + PoE\nCat6a, max 100 m\nManagement VLAN 10" --> APGroup
+    WLCCluster <-- "CAPWAP Management & Control\n(over fiber backbone)\nVLAN 10" --> APGroup
+    APGroup -.-> |"WiFi SSIDs\n2.4/5/6 GHz"| Fans
+    APGroup -.-> |"WiFi SSIDs"| Staff
+    APGroup -.-> |"WiFi SSIDs"| Media
+    APGroup -.-> |"WiFi SSIDs"| IoT
+    WLCCluster --> |"Central Switching"| VLAN10
+    WLCCluster --> |"Central Switching"| VLAN20
+    WLCCluster --> |"Central Switching"| VLAN30
+    WLCCluster --> |"Central Switching"| VLAN40
+    WLCCluster --> |"Central Switching"| VLAN50
+    WLCCluster --> |"Central Switching"| VLAN60
+    WLCCluster --> |"Central Switching"| VLAN70
+
+    classDef wlc fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef ap fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+
+    linkStyle 2 stroke:#2196F3,stroke-width:4px
+    linkStyle 3 stroke:#2196F3,stroke-width:4px
+    linkStyle 4 stroke:#FF9800,stroke-width:4px
+    linkStyle 5 stroke:#2196F3,stroke-width:4px
